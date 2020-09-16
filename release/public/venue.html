@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hanabi</title>
+
+    <!-- <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script> -->
+    <!-- <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r120/three.min.js"
+        integrity="sha512-kgjZw3xjgSUDy9lTU085y+UCVPz3lhxAtdOVkcO4O2dKl2VSBcNsQ9uMg/sXIM4SoOmCiYfyFO/n1/3GSXZtSg=="
+        crossorigin="anonymous"></script>
+</head>
+
+<body style="margin : 0px; overflow: hidden;">
+    <!-- <a-scene id="touchDet" vr-mode-ui="enabled: false" arjs="debugUIEnabled:false;">
+        <a-box position="5 0 -7" rotation="0 45 0" color="#4CC3D9"></a-box>
+        <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E"></a-sphere>
+        <a-cylinder position="1 0.75 -3" radius="0.5" height="1.5" color="#FFC65D"></a-cylinder>
+        <a-entity id="camera" camera position="0 0 0" look-controls></a-entity>
+    </a-scene> -->
+    <!-- <video id="player" autoplay></video> -->
+    <div id="webGL"></div>
+    <p id="devices"></p>
+    <script>
+        const player = document.getElementById('player');
+        navigator.mediaDevices.enumerateDevices()
+            .then(devices => {
+                console.log(devices);
+                document.getElementById('devices').textContent = JSON.stringify(devices);
+            });
+        const getUserMedia = async () => {
+            // カメラ映像を取得
+            const stream = await navigator.mediaDevices
+                .getUserMedia(
+                    {
+                        video: {
+                            // スマホ
+                            deviceId: "748767521d82dea792ea4863dccc8a57101282beffd0bb6aff74c1d71b4900df",
+                            width: window.innerHeight, height: window.innerWidth
+                        }, audio: false
+                    });
+            // return mediaStream;
+            player.srcObject = stream;
+        }
+        getUserMedia();
+
+        // three.jsの設定
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        // ウィンドウサイズ設定
+        width = window.innerWidth / 1.6;
+        height = window.innerHeight / 1.6;
+        renderer.setPixelRatio(1);
+        renderer.setSize(width, height);
+        renderer.setClearColor(0xf3f3f3, 1.0);
+        renderer.outputEncoding = THREE.GammaEncoding;
+        // シーンを作成
+        const scene = new THREE.Scene();
+
+        // カメラを作成
+        camera = new THREE.PerspectiveCamera(50, width / height, 1, 10000);
+        camera.position.set(0, 0, 30);
+        // 光源を追加
+        const light = new THREE.AmbientLight(0x666666, 1);
+        // const light = new THREE.DirectionalLight(0xffffff, 1);
+        scene.add(light);
+        // 箱を作成
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.MeshNormalMaterial();
+        const box = new THREE.Mesh(geometry, material);
+        scene.add(box);
+        document.getElementById("webGL").appendChild(renderer.domElement);
+    </script>
+</body>
+
+</html>
