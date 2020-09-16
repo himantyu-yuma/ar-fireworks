@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGLテスト</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1/new.min.css">
+    <style>
+        button {
+            margin: 10px;
+        }
+
+        .over {
+            position: absolute;
+            transform: none;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+
+<body style="margin: 0;padding: 0;">
+    <div id="webGL"></div>
+    <div class="over">
+        <button onclick="changeAxis([1,0,0])">X軸</button>
+        <button onclick="changeAxis([0,1,0])">Y軸</button>
+        <button onclick="changeAxis([0,0,1])">Z軸</button>
+        <button onclick="changeSpeed(0.1)">スピードアップ</button>
+        <button onclick="changeSpeed(-0.1)">スピードダウン</button>
+
+        <button onclick="changeColor(Math.random() * 0xFFFFFF | 0)">色変更</button>
+    </div>
+    <video id="player" autoplay></video>
+
+    <script src="three/build/three.min.js"></script>
+    <script src="three/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="three/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        const player = document.getElementById('player');
+        navigator.mediaDevices.enumerateDevices()
+            .then(devices => {
+                console.log(devices);
+                document.getElementById('devices').textContent = JSON.stringify(devices);
+            });
+        const getUserMedia = async () => {
+            // カメラ映像を取得
+            const stream = await navigator.mediaDevices
+                .getUserMedia(
+                    {
+                        video: {
+                            // スマホ
+                            deviceId: "748767521d82dea792ea4863dccc8a57101282beffd0bb6aff74c1d71b4900df",
+                            width: window.innerHeight, height: window.innerWidth
+                        }, audio: false
+                    });
+            // return mediaStream;
+            player.srcObject = stream;
+        }
+        getUserMedia();
+
+        window.addEventListener('DOMContentLoaded', init);
+
+        function init() {
+            // レンダラーを作成
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            // ウィンドウサイズ設定
+            // width = window.innerWidth / 1.6;
+            // height = window.innerHeight / 1.6;
+            width = window.innerWidth;
+            height = window.innerHeight - 5;
+            renderer.setPixelRatio(1);
+            renderer.setSize(width, height);
+            renderer.setClearColor(0x000000, 0);
+            // renderer.gammaOutput = true;
+            // renderer.gammaFactor = 2.2;
+            renderer.outputEncoding = THREE.GammaEncoding;
+
+            console.log(window.devicePixelRatio);
+            console.log(width + ", " + height);
+
+            // シーンを作成
+            const scene = new THREE.Scene();
+
+            // カメラを作成
+            camera = new THREE.PerspectiveCamera(50, width / height, 1, 10000);
+            camera.position.set(0, 0, 30);
+            // 光源を追加
+            // const light = new THREE.AmbientLight(0xffffff, 1);
+            const light = new THREE.AmbientLight(0x666666, 1);
+            // const light = new THREE.DirectionalLight(0xffffff, 1);
+            scene.add(light);
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+            // Load GLTF or GLB
+            const loader = new THREE.GLTFLoader();
+
+            let model = null;
+            loader.load('./models/panjan2_join.glb', function (data) {
+                const gltf = data;
+                const obj = gltf.scene;
+
+                changeColor = (color) => {
+                    const children = obj.children;
+                    children.forEach(child => {
+                        child.material.color.set(color);
+                    });
+                }
+
+                model = obj;
+                scene.add(obj);
+                // 初回実行
+                tick();
+
+                function tick() {
+                    controls.update();
+                    renderer.render(scene, camera);
+                    requestAnimationFrame(tick);
+                    model.rotation.x += axis[0] * speed;
+                    model.rotation.y += axis[1] * speed;
+                    model.rotation.z += axis[2] * speed;
+                }
+            });
+
+            document.getElementById("webGL").appendChild(renderer.domElement);
+
+            let speed = 0;
+            let axis = [1, 0, 0];
+
+            changeSpeed = num => {
+                speed += num;
+            }
+
+            changeAxis = btnAxis => {
+                axis = btnAxis;
+                console.log(axis);
+            }
+
+        }
+    </script>
+</body>
+
+</html>
