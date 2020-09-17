@@ -5,18 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebGLテスト</title>
-    <style>
-        button {
-            margin: 10px;
-        }
-
-        .over {
-            position: absolute;
-            transform: none;
-            top: 0;
-            left: 0;
-        }
-    </style>
 </head>
 
 <body style="margin: 0;padding: 0;">
@@ -25,12 +13,109 @@
     <script src="three/examples/js/loaders/GLTFLoader.js"></script>
     <script src="three/examples/js/controls/OrbitControls.js"></script>
     <script src="three/examples/js/loaders/OBJLoader.js"></script>
-    <script src="three/examples/js/postprocessing/RenderPass.js"></script>
-    <script src="three/examples/js/postprocessing/ShaderPass.js"></script>
-    <script src="three/examples/js/shaders/FXAAShader.js"></script>
-    <script src="three/examples/js/shaders/CopyShader.js"></script>
-    <script src="three/examples/js/shaders/LuminosityHighPassShader.js"></script>
-    <script src="sankou.js"></script>
+    <!-- <script src="sankou.js"></script> -->
+    <script>
+        window.addEventListener('load', init);
+
+        function init() {
+
+            //描画領域を変数に格納
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            let rot = 0;
+
+            //sceneを作成
+            const scene = new THREE.Scene();
+
+            //cameraを作成
+            const camera = new THREE.PerspectiveCamera(45, width / height, 1, 2000);
+            camera.position.set(0, 0, 1000);
+
+
+            starField();
+            function starField() {
+                //空のジオメトリを作って
+                const geometry = new THREE.Geometry();
+                //表示する範囲を宣言して
+                const SIZE = 3000;
+                //表示するパーティクルの数を決めて
+                const LENGTH = 20000;
+                //その数まで四方八方に表示させるループ処理をする
+                for (let i = 0; i < LENGTH; i++) {
+                    geometry.vertices.push(
+                        new THREE.Vector3(
+                            SIZE * (Math.random() - 0.5),
+                            SIZE * (Math.random() - 0.5),
+                            SIZE * (Math.random() - 0.5)
+                        )
+                    );
+                }
+                //マテリアルを作成、色とサイズも一緒に
+                const material = new THREE.PointsMaterial({
+                    map: '/images/particle.png',
+                    color: '#ffffff',
+                    size: 5,
+                    blending: THREE.AdditiveBlending,
+                    transparent: true,
+                    depthTest: false
+                });
+
+                const particles = new THREE.Points(geometry, material);
+                scene.add(particles);
+                // const material = new THREE.PointsMaterial({
+                //     color: '0xffffff',
+                //     size: 5
+                // });
+                // const mesh = new THREE.Points(geometry, material);
+                // scene.add(mesh);
+            }
+
+
+            //レンダラーを作成
+            const renderer = new THREE.WebGLRenderer({
+                canvas: document.querySelector('#canvas'),
+                antialias: true
+            });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(width, height);
+
+
+            // //初回実行
+            // tick();
+
+            // //実行するための関数
+            // function tick() {
+            //     rot += 0.1;
+
+            //     //アニメーション処理
+            //     const radian = (rot * Math.PI) / 180;
+            //     camera.position.x = Math.sin(radian) * 2000;
+            //     camera.position.z = Math.cos(radian) * 1000;
+            //     camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+            //     //レンダリング
+            //     renderer.render(scene, camera);
+
+            //     //自分自身を呼び続ける
+            //     requestAnimationFrame(tick);
+            // }
+
+            onResize();
+            window.addEventListener('resize', onResize);
+            function onResize() {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(width, height);
+
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
+
+        }
+    </script>
 </body>
 
 </html>
